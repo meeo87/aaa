@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="cs" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#09090b">
+  <title>HARDCORE RESET // LOBBY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Inter:wght@400;600;800&display=swap');
+    html, body { height: 100%; overflow: hidden; }
+    body { font-family: 'Inter', sans-serif; background-color: #07080c; color: #f4f4f5; -webkit-tap-highlight-color: transparent; user-select: none; }
+    .font-mono-tech { font-family: 'JetBrains Mono', monospace; }
+    .glow-emerald { box-shadow: 0 0 20px rgba(16, 185, 129, 0.25); }
+    .glow-red { box-shadow: 0 0 25px rgba(239, 68, 68, 0.35); }
+    @keyframes orbit-sky { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .sky-wheel { transform-origin: 65px 65px; animation: orbit-sky 2.2s linear infinite; }
+    @keyframes screen-flicker { 0%, 100% { opacity: 0.9; } 50% { opacity: 0.45; } }
+    .monitor-glow { animation: screen-flicker 0.35s infinite; }
+    @keyframes sand-fall { 0% { stroke-dashoffset: 20; } 100% { stroke-dashoffset: 0; } }
+    .sand-stream { stroke-dasharray: 4 4; animation: sand-fall 0.4s linear infinite; }
+    .cartoon-frame { border: 3px solid #27272a; box-shadow: 6px 6px 0px #18181b; }
+    @keyframes caption-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    .caption-in { animation: caption-in .45s ease-out both; }
+    .check-row input:checked + .box { background:#10b981; border-color:#10b981; }
+    .check-row input:checked + .box svg { opacity:1; }
+    .check-row input:checked ~ .label { color:#71717a; text-decoration: line-through; }
+    .check-row input:focus-visible + .box { outline: 2px solid #22d3ee; outline-offset: 2px; }
+    #world { touch-action: none; display: block; }
+    .key { display:inline-block; min-width: 1.6em; text-align:center; padding: 0 .35em; border: 2px solid #3f3f46; border-bottom-width: 4px; background:#18181b; color:#e4e4e7; }
+    .pad-btn { width: 52px; height: 52px; background: rgba(24,24,27,.75); border: 2px solid #3f3f46; color: #e4e4e7; font-family: 'JetBrains Mono', monospace; font-weight: 800; touch-action: none; }
+    .pad-btn:active { background: #10b981; color: #000; }
+    @keyframes toast-in { from { opacity:0; transform: translate(-50%, -8px); } to { opacity:1; transform: translate(-50%, 0); } }
+    .toast-in { animation: toast-in .25s ease-out both; }
+    @media (prefers-reduced-motion: reduce) { .sky-wheel, .monitor-glow, .sand-stream { animation: none; } }
+  </style>
+</head>
+<body class="selection:bg-emerald-500 selection:text-black">
+
+  <!-- FILMOVÉ VEKTOROVÉ INTRO -->
+  <div id="intro-screen" class="fixed inset-0 bg-[#0b0d12] z-50 flex flex-col items-center justify-between p-5 transition-opacity duration-700 overflow-y-auto">
+    <div class="w-full max-w-md flex justify-between items-center border-b-2 border-zinc-800 pb-2.5 text-[11px] font-mono-tech">
+      <div class="flex items-center gap-2">
+        <span class="bg-cyan-500 text-black font-extrabold px-1.5 py-0.5">UNIT 8</span>
+        <span class="text-zinc-400">THE PASSING OF TIME</span>
+      </div>
+      <button onclick="finishIntro()" class="text-zinc-400 hover:text-white underline">Skip film &gt;&gt;</button>
+    </div>
+
+    <div class="w-full max-w-md my-auto space-y-4 py-2">
+      <div class="flex justify-between items-center bg-zinc-900 border-2 border-zinc-800 px-3.5 py-2">
+        <div>
+          <div class="text-[10px] font-mono-tech text-cyan-400 uppercase">TIMELINE</div>
+          <div id="film-year" class="text-2xl font-black font-mono-tech text-white tracking-tight">2026</div>
+        </div>
+        <div class="text-right font-mono-tech">
+          <div class="text-[10px] text-zinc-500 uppercase">Věk subjektu</div>
+          <div id="film-age" class="text-2xl font-black text-white">25</div>
+        </div>
+      </div>
+
+      <div class="cartoon-frame bg-[#11141b] relative overflow-hidden">
+        <svg viewBox="0 0 360 230" class="w-full h-auto block" role="img" aria-label="Kreslená scéna: postava sedí u monitoru, za oknem se točí slunce a měsíc, vedle se sype přesýpací hodiny.">
+          <rect width="360" height="230" fill="#11141b"/>
+          <rect y="178" width="360" height="52" fill="#0d1016"/>
+          <line x1="0" y1="178" x2="360" y2="178" stroke="#27272a" stroke-width="3"/>
+          <g transform="translate(22,20)">
+            <rect x="0" y="0" width="130" height="130" fill="#0b2236" stroke="#3f3f46" stroke-width="4"/>
+            <g class="sky-wheel" id="sky-wheel">
+              <circle cx="65" cy="18" r="11" fill="#facc15" stroke="#18181b" stroke-width="3"/>
+              <circle cx="65" cy="112" r="9" fill="#e4e4e7" stroke="#18181b" stroke-width="3"/>
+              <circle cx="68" cy="110" r="2" fill="#a1a1aa"/>
+            </g>
+            <rect x="0" y="95" width="130" height="35" fill="#0f172a"/>
+            <path d="M0 108 L18 96 L34 104 L52 90 L72 106 L92 94 L110 103 L130 92 L130 130 L0 130Z" fill="#1e293b" stroke="#18181b" stroke-width="2"/>
+            <line x1="65" y1="0" x2="65" y2="130" stroke="#3f3f46" stroke-width="4"/>
+            <line x1="0" y1="65" x2="130" y2="65" stroke="#3f3f46" stroke-width="4"/>
+          </g>
+          <g transform="translate(176,26)">
+            <rect width="54" height="58" fill="#f4f4f5" stroke="#18181b" stroke-width="3"/>
+            <rect width="54" height="16" fill="#ef4444" stroke="#18181b" stroke-width="3"/>
+            <text id="cal-year" x="27" y="44" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="14" fill="#18181b">2026</text>
+          </g>
+          <rect x="170" y="150" width="170" height="10" fill="#3f3f46" stroke="#18181b" stroke-width="3"/>
+          <rect x="182" y="160" width="8" height="18" fill="#27272a"/>
+          <rect x="320" y="160" width="8" height="18" fill="#27272a"/>
+          <g transform="translate(238,92)">
+            <rect x="0" y="0" width="86" height="54" rx="3" fill="#18181b" stroke="#52525b" stroke-width="3"/>
+            <rect class="monitor-glow" x="6" y="6" width="74" height="42" fill="#22d3ee"/>
+            <rect x="12" y="12" width="40" height="4" fill="#0e7490"/>
+            <rect x="12" y="20" width="58" height="4" fill="#0e7490"/>
+            <rect x="12" y="28" width="30" height="4" fill="#0e7490"/>
+            <rect x="38" y="54" width="10" height="4" fill="#52525b"/>
+          </g>
+          <path d="M238 100 L200 150 L240 150Z" fill="#22d3ee" opacity="0.08"/>
+          <g id="person" transform="translate(196,96)">
+            <rect x="-6" y="56" width="34" height="8" fill="#52525b" stroke="#18181b" stroke-width="2"/>
+            <rect x="6" y="64" width="6" height="18" fill="#3f3f46"/>
+            <path id="person-back" d="M0 58 Q2 26 22 18 L30 22 Q20 34 18 58Z" fill="#6366f1" stroke="#18181b" stroke-width="3"/>
+            <circle id="person-head" cx="30" cy="12" r="10" fill="#fcd34d" stroke="#18181b" stroke-width="3"/>
+            <path id="person-hair" d="M21 8 Q28 -2 39 7" fill="none" stroke="#18181b" stroke-width="5" stroke-linecap="round"/>
+            <path d="M22 30 L42 46" stroke="#6366f1" stroke-width="7" stroke-linecap="round"/>
+            <path d="M22 30 L42 46" stroke="#18181b" stroke-width="1"/>
+          </g>
+          <g transform="translate(300,22)">
+            <rect x="-2" y="0" width="34" height="5" fill="#a16207" stroke="#18181b" stroke-width="2"/>
+            <rect x="-2" y="57" width="34" height="5" fill="#a16207" stroke="#18181b" stroke-width="2"/>
+            <path d="M2 5 L28 5 L18 31 L28 57 L2 57 L12 31Z" fill="#0b2236" stroke="#e4e4e7" stroke-width="2"/>
+            <path id="sand-top" d="M5 9 L25 9 L16 29 L14 29Z" fill="#fbbf24"/>
+            <line class="sand-stream" x1="15" y1="31" x2="15" y2="54" stroke="#fbbf24" stroke-width="2"/>
+            <path id="sand-bottom" d="M6 55 L24 55 L15 48Z" fill="#fbbf24"/>
+          </g>
+          <text id="scene-tag" x="14" y="218" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="#22d3ee">FIG. 8.1 — SCREEN TIME</text>
+        </svg>
+      </div>
+
+      <div class="space-y-1.5 font-mono-tech">
+        <div class="flex justify-between text-[10px] uppercase">
+          <span class="text-zinc-500">Spotřebovaný čas</span>
+          <span id="life-pct" class="text-red-400 font-bold">0%</span>
+        </div>
+        <div class="h-3 bg-zinc-900 border-2 border-zinc-800">
+          <div id="life-bar" class="h-full bg-red-500 transition-all duration-300" style="width:0%"></div>
+        </div>
+        <div class="flex justify-between text-[10px] text-zinc-500">
+          <span>Hodin před obrazovkou</span>
+          <span id="screen-hours" class="text-white font-bold">0</span>
+        </div>
+      </div>
+
+      <p id="film-caption" class="caption-in min-h-[3.5rem] text-[15px] leading-snug text-zinc-200 border-l-4 border-cyan-500 pl-3">
+        Rok 2026. Máš před sebou celý život. Zatím.
+      </p>
+    </div>
+
+    <div class="w-full max-w-md">
+      <button id="intro-cta" onclick="finishIntro()" class="w-full py-3.5 font-mono-tech font-extrabold text-sm uppercase tracking-wider bg-zinc-800 text-zinc-500 border-2 border-zinc-700 transition-all" disabled>
+        Film běží…
+      </button>
+    </div>
+  </div>
+
+  <!-- 3D LOBBY -->
+  <div id="lobby" class="fixed inset-0 opacity-0 transition-opacity duration-700">
+    <canvas id="world" aria-label="3D lobby Hardcore Reset. Pohyb WASD, rozhled myší, interakce klávesou E nebo kliknutím."></canvas>
+
+    <!-- HUD -->
+    <div class="pointer-events-none absolute inset-0 font-mono-tech">
+      <div class="absolute top-3 left-3 bg-black/60 border-2 border-zinc-800 px-3 py-2">
+        <div class="font-extrabold text-sm tracking-tight">HARDCORE RESET<span class="text-emerald-400"> // LOBBY</span></div>
+        <div id="today-label" class="text-[10px] text-zinc-500">—</div>
+      </div>
+      <div class="absolute top-3 right-3 bg-black/60 border-2 border-zinc-800 px-3 py-2 text-right">
+        <div class="text-[10px] text-emerald-400 uppercase">Čistá série</div>
+        <div class="text-lg font-extrabold leading-tight"><span id="hud-days">0</span> <span class="text-zinc-500 text-xs">DNÍ</span></div>
+        <div id="hud-clock" class="text-[11px] text-zinc-400">00:00:00</div>
+        <div class="text-[10px] text-cyan-400 mt-1">PROTOKOL <span id="hud-proto">0/6</span></div>
+      </div>
+
+      <!-- crosshair -->
+      <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" aria-hidden="true">
+        <div id="crosshair" class="relative w-5 h-5">
+          <span class="absolute left-1/2 top-0 -translate-x-1/2 w-[3px] h-full bg-white/80"></span>
+          <span class="absolute top-1/2 left-0 -translate-y-1/2 h-[3px] w-full bg-white/80"></span>
+        </div>
+      </div>
+      <div id="prompt" class="hidden absolute left-1/2 top-1/2 -translate-x-1/2 mt-8 bg-black/75 border-2 border-emerald-500 px-3 py-1.5 text-xs font-bold text-white whitespace-nowrap">
+        <span class="key text-[10px] mr-1.5">E</span><span id="prompt-text"></span>
+      </div>
+
+      <div id="toast" class="hidden absolute left-1/2 top-20 -translate-x-1/2 bg-black/80 border-2 border-emerald-500 px-4 py-2 text-xs font-bold whitespace-nowrap"></div>
+
+      <div id="hint" class="hidden md:block absolute bottom-3 left-3 bg-black/60 border-2 border-zinc-800 px-3 py-2 text-[10px] text-zinc-400 space-y-1">
+        <div><span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span> pohyb &nbsp;<span class="key">SHIFT</span> běh &nbsp;<span class="key">SPACE</span> skok</div>
+        <div><span class="key">MYŠ</span> rozhled &nbsp;<span class="key">E</span> / klik interakce &nbsp;<span class="key">ESC</span> uvolnit myš</div>
+        <div><span class="key">F</span> hodinky &nbsp;<span class="key">LMB</span> AM &nbsp;<span class="key">RMB</span> PM</div>
+      </div>
+
+      <div id="watch-hint" class="hidden absolute top-20 md:top-6 left-1/2 -translate-x-1/2 bg-black/70 border-2 border-emerald-500 px-3 py-1.5 text-[11px] text-zinc-200 whitespace-nowrap">
+        <span class="key">LMB</span> AM &nbsp;<span class="key">RMB</span> PM &nbsp;<span class="key">F</span> schovat
+      </div>
+      <div id="watch-live" class="sr-only" aria-live="polite"></div>
+    </div>
+
+    <!-- Mobile pad -->
+    <div id="mobile-pad" class="hidden absolute inset-x-0 bottom-4 px-4 justify-between items-end">
+      <div class="grid grid-cols-3 gap-1">
+        <span></span><button class="pad-btn" data-key="KeyW" aria-label="Dopředu">▲</button><span></span>
+        <button class="pad-btn" data-key="KeyA" aria-label="Doleva">◀</button><button class="pad-btn" data-key="KeyS" aria-label="Dozadu">▼</button><button class="pad-btn" data-key="KeyD" aria-label="Doprava">▶</button>
+      </div>
+      <div class="flex gap-2">
+        <button id="pad-watch" class="pad-btn" aria-label="Hodinky">HOD</button>
+        <button class="pad-btn" data-key="Space" aria-label="Skok">JUMP</button>
+        <button id="pad-use" class="pad-btn !bg-emerald-500 !text-black" aria-label="Použít">E</button>
+      </div>
+    </div>
+
+    <!-- Start / pause overlay -->
+    <div id="start-overlay" class="absolute inset-0 bg-black/70 flex items-center justify-center p-6">
+      <button id="start-btn" class="cartoon-frame bg-zinc-950 p-6 max-w-sm w-full text-left font-mono-tech hover:border-emerald-500 transition-colors">
+        <div id="start-tag" class="text-[10px] text-emerald-400 uppercase tracking-widest">Lobby připraveno</div>
+        <div id="start-title" class="text-2xl font-extrabold mt-1">Vstoupit do lobby</div>
+        <p class="text-xs text-zinc-400 mt-3 leading-relaxed font-sans">Projdi se po světě. Monument ukazuje sérii, sloupy jsou denní protokol, červené tlačítko je relaps, portál přehraje film.</p>
+        <div class="mt-4 bg-emerald-500 text-black text-center font-extrabold text-sm py-3 uppercase tracking-wider">Klikni pro start →</div>
+      </button>
+    </div>
+
+    <!-- Panel -->
+    <div id="panel-wrap" class="hidden absolute inset-0 bg-black/60 items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="panel-title">
+      <div class="cartoon-frame bg-zinc-950 w-full max-w-md max-h-[85vh] overflow-y-auto p-5">
+        <div class="flex justify-between items-center border-b-2 border-zinc-800 pb-2 mb-3">
+          <h2 id="panel-title" class="text-[11px] font-mono-tech uppercase tracking-widest text-emerald-400">—</h2>
+          <button id="panel-close" class="text-[11px] font-mono-tech text-zinc-400 hover:text-white border-2 border-zinc-800 px-2 py-0.5">ESC ✕</button>
+        </div>
+        <div id="panel-body"></div>
+      </div>
+    </div>
+
+    <div id="flash" class="pointer-events-none absolute inset-0 bg-red-600 opacity-0 transition-opacity duration-500"></div>
+  </div>
+
+  <script type="module">
+    const $ = id => document.getElementById(id);
+
+    /* ---------- FILM ---------- */
+    const scenes = [
+      { tag: 'FIG. 8.1 — SCREEN TIME', text: 'Rok 2026. Máš před sebou celý život. Zatím.' },
+      { tag: 'FIG. 8.2 — THE SCROLL', text: 'Průměrně 7 hodin denně před obrazovkou. Slunce vychází a zapadá. Ty scrolluješ.' },
+      { tag: 'FIG. 8.3 — COMPOUND LOSS', text: 'Za 15 let je to přes 38 000 hodin. Čtyři celé roky bdělého života.' },
+      { tag: 'FIG. 8.4 — THE HOURGLASS', text: 'Písek nečeká. Algoritmus taky ne. Rozdíl je, že písek se nevrací.' },
+      { tag: 'FIG. 8.5 — REVIEW', text: '17 let života v obdélníku 6 palců. Co sis z toho zapamatoval?' },
+      { tag: 'FIG. 8.6 — RESET', text: 'Ještě je rok 2026. Ještě to můžeš přepsat. Začni dnes.' },
+    ];
+    let filmTimer = null;
+    const FILM_MS = 13000;
+
+    function setCaption(txt, tag) {
+      const c = $('film-caption');
+      c.classList.remove('caption-in'); void c.offsetWidth; c.classList.add('caption-in');
+      c.textContent = txt; $('scene-tag').textContent = tag;
+    }
+
+    function runFilm() {
+      clearInterval(filmTimer);
+      const filmStart = performance.now();
+      let lastScene = -1;
+      const cta = $('intro-cta');
+      cta.disabled = true; cta.textContent = 'Film běží…';
+      cta.className = 'w-full py-3.5 font-mono-tech font-extrabold text-sm uppercase tracking-wider bg-zinc-800 text-zinc-500 border-2 border-zinc-700 transition-all';
+      $('sky-wheel').style.animationDuration = '2.2s';
+
+      filmTimer = setInterval(() => {
+        const t = Math.min(1, (performance.now() - filmStart) / FILM_MS);
+        const aging = Math.min(1, t / 0.82);
+        const rewound = t >= 0.82;
+        const year = rewound ? 2026 : Math.round(2026 + aging * 45);
+        $('film-year').textContent = year;
+        $('cal-year').textContent = year;
+        $('film-age').textContent = rewound ? 25 : Math.round(25 + aging * 45);
+        const pct = rewound ? 0 : Math.round(aging * 100);
+        $('life-pct').textContent = pct + '%';
+        $('life-bar').style.width = pct + '%';
+        $('screen-hours').textContent = rewound ? '0' : Math.round(aging * 45 * 365 * 7).toLocaleString('cs-CZ');
+        $('sky-wheel').style.animationDuration = rewound ? '6s' : (2.2 - aging * 1.8).toFixed(2) + 's';
+        const top = rewound ? 1 : 1 - aging;
+        $('sand-top').setAttribute('d', `M${15 - 10*top} ${29 - 20*top} L${15 + 10*top} ${29 - 20*top} L16 29 L14 29Z`);
+        const bot = rewound ? 0.1 : 0.1 + aging * 0.9;
+        $('sand-bottom').setAttribute('d', `M${15 - 9*bot - 1} 55 L${15 + 9*bot + 1} 55 L15 ${55 - 20*bot}Z`);
+        const grey = Math.round(24 + aging * 200);
+        $('person-hair').setAttribute('stroke', rewound ? '#18181b' : `rgb(${grey},${grey},${grey})`);
+        $('person-head').setAttribute('cy', rewound ? 12 : (12 + aging * 10).toFixed(1));
+        $('person-head').setAttribute('cx', rewound ? 30 : (30 + aging * 6).toFixed(1));
+        $('person-hair').setAttribute('transform', rewound ? '' : `translate(${(aging*6).toFixed(1)},${(aging*10).toFixed(1)})`);
+        const idx = rewound ? 5 : Math.min(4, Math.floor(aging * 5));
+        if (idx !== lastScene) { lastScene = idx; setCaption(scenes[idx].text, scenes[idx].tag); }
+        if (t >= 1) {
+          clearInterval(filmTimer);
+          cta.disabled = false; cta.textContent = 'Vstoupit do lobby →';
+          cta.className = 'w-full py-3.5 font-mono-tech font-extrabold text-sm uppercase tracking-wider bg-emerald-500 text-black border-2 border-emerald-400 glow-emerald hover:bg-emerald-400 transition-all';
+          cta.focus();
+        }
+      }, 50);
+    }
+
+    function finishIntro() {
+      clearInterval(filmTimer);
+      const intro = $('intro-screen');
+      intro.style.opacity = '0';
+      setTimeout(() => { intro.style.display = 'none'; }, 700);
+      $('lobby').style.opacity = '1';
+      showOverlay('Lobby připraveno', 'Vstoupit do lobby');
+      if (!state.start) { state.start = Date.now(); log('Protokol zahájen. Den 0.'); save(); }
+      render();
+    }
+    function replayIntro() {
+      if (document.pointerLockElement) document.exitPointerLock();
+      closePanel(false);
+      const intro = $('intro-screen');
+      intro.style.display = 'flex';
+      requestAnimationFrame(() => { intro.style.opacity = '1'; });
+      runFilm();
+    }
+    window.finishIntro = finishIntro;
+
+    /* ---------- DATA ---------- */
+    const PROTOCOL = [
+      { id: 'phone', short: 'TELEFON', label: 'Telefon mimo ložnici', sub: 'Žádná obrazovka 60 min po probuzení' },
+      { id: 'cold', short: 'SPRCHA', label: 'Studená sprcha', sub: 'Minimálně 2 minuty' },
+      { id: 'move', short: 'POHYB', label: 'Pohyb 45 minut', sub: 'Trénink, běh, chůze venku' },
+      { id: 'read', short: 'ČTENÍ', label: 'Čtení 20 stran', sub: 'Papír, ne feed' },
+      { id: 'social', short: 'SOCIÁL', label: 'Nula sociálních sítí', sub: 'Žádný scroll, žádné shorts' },
+      { id: 'sleep', short: 'SPÁNEK', label: 'Spánek do 23:00', sub: 'Obrazovky off v 22:00' },
+    ];
+    const KEY = 'hardcore-reset-v1';
+    const DAY = 86400000;
+    const state = load();
+    let armTimer = null;
+
+    function load() {
+      const base = { start: null, best: 0, resets: 0, checks: {}, log: [], usage: {} };
+      try { return Object.assign(base, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch { return base; }
+    }
+    function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} }
+    const todayKey = () => new Date().toISOString().slice(0, 10);
+    const todayDone = () => state.checks[todayKey()] || [];
+    const localDayKey = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
+    function usageToday() {
+      const k = localDayKey();
+      if (!Array.isArray(state.usage[k])) state.usage[k] = Array(24).fill(0);
+      return state.usage[k];
+    }
+    function fmtDur(sec) {
+      const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60;
+      return h ? `${h}h ${String(m).padStart(2, '0')}m` : `${m}m ${String(s).padStart(2, '0')}s`;
+    }
+    let usageTicks = 0;
+    setInterval(() => {
+      if (document.hidden) return;
+      usageToday()[new Date().getHours()]++;
+      if (++usageTicks % 10 === 0) save();
+    }, 1000);
+    addEventListener('pagehide', save);
+
+    function log(msg) {
+      const d = new Date();
+      state.log.unshift({ t: d.toLocaleString('cs-CZ', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }), msg });
+      state.log = state.log.slice(0, 30);
+    }
+    function streak() {
+      const ms = state.start ? Date.now() - state.start : 0;
+      const days = Math.floor(ms / DAY);
+      const rem = ms % DAY;
+      const pad = n => String(n).padStart(2, '0');
+      return {
+        ms, days,
+        clock: `${pad(Math.floor(rem / 3600000))}:${pad(Math.floor(rem % 3600000 / 60000))}:${pad(Math.floor(rem % 60000 / 1000))}`,
+        pct: Math.min(100, Math.round(days / 90 * 100)),
+        best: Math.max(state.best, days),
+        saved: Math.round(ms / 3600000 * (5 / 24)),
+      };
+    }
+    function toggleCheck(id, on) {
+      const k = todayKey(); const set = new Set(state.checks[k] || []);
+      const next = on ?? !set.has(id);
+      next ? set.add(id) : set.delete(id);
+      state.checks[k] = [...set];
+      if (set.size === PROTOCOL.length && next) log('Denní protokol splněn 6/6.');
+      save();
+      return next;
+    }
+
+    /* ---------- PANELS ---------- */
+    let panelOpen = null, relockAfterPanel = false;
+    const setText = (id, v) => { const el = $(id); if (el) el.textContent = v; };
+
+    const panels = {
+      streak: { title: 'Monument // Čistá série', color: 'text-emerald-400', html: () => `
+        <div class="flex items-end gap-2"><span id="p-days" class="text-7xl font-black font-mono-tech leading-none">0</span><span class="text-zinc-400 font-mono-tech pb-2">dní</span></div>
+        <p id="p-clock" class="font-mono-tech text-sm text-zinc-400 mt-2">00:00:00</p>
+        <div class="mt-4 space-y-1.5">
+          <div class="flex justify-between text-[10px] font-mono-tech uppercase text-zinc-500"><span>Cíl: 90 dní</span><span id="p-pct" class="text-emerald-400">0%</span></div>
+          <div class="h-3 bg-zinc-900 border-2 border-zinc-800"><div id="p-bar" class="h-full bg-emerald-500 transition-all" style="width:0%"></div></div>
+        </div>
+        <div class="grid grid-cols-3 gap-2 mt-4 text-center font-mono-tech">
+          <div class="border-2 border-zinc-800 py-2"><div id="p-best" class="text-xl font-extrabold">0</div><div class="text-[9px] text-zinc-500 uppercase">Rekord</div></div>
+          <div class="border-2 border-zinc-800 py-2"><div class="text-xl font-extrabold">${state.resets}</div><div class="text-[9px] text-zinc-500 uppercase">Resety</div></div>
+          <div class="border-2 border-zinc-800 py-2"><div id="p-saved" class="text-xl font-extrabold">0h</div><div class="text-[9px] text-zinc-500 uppercase">Získáno</div></div>
+        </div>` },
+      protocol: { title: 'Denní protokol', color: 'text-cyan-400', html: () => {
+        const done = todayDone();
+        return `<p class="text-xs text-zinc-500 mb-3">Tip: v lobby můžeš kostky na sloupech odškrtávat přímo klávesou E.</p>
+        <ul class="space-y-2">${PROTOCOL.map(p => `
+          <li><label class="check-row flex items-start gap-3 p-2.5 border-2 border-zinc-800 hover:border-zinc-600 cursor-pointer">
+            <input type="checkbox" class="sr-only" data-id="${p.id}" ${done.includes(p.id) ? 'checked' : ''}>
+            <span class="box mt-0.5 w-5 h-5 shrink-0 border-2 border-zinc-600 flex items-center justify-center transition-colors">
+              <svg class="opacity-0 w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="#000" stroke-width="3" aria-hidden="true"><path d="M3 8.5l3.5 3.5L13 4.5"/></svg>
+            </span>
+            <span class="label flex-1"><span class="block text-sm font-semibold">${p.label}</span><span class="block text-[11px] text-zinc-500">${p.sub}</span></span>
+          </label></li>`).join('')}</ul>`;
+      }, wire: body => body.querySelectorAll('input').forEach(inp => inp.addEventListener('change', e => {
+        toggleCheck(e.target.dataset.id, e.target.checked); render();
+      })) },
+      reset: { title: 'Selhání', color: 'text-red-400', html: () => `
+        <p class="text-sm text-zinc-400">Buď upřímný. Série se vynuluje, rekord zůstane.</p>
+        <button id="reset-btn" class="mt-4 w-full py-3.5 font-mono-tech font-extrabold text-sm uppercase tracking-wider bg-red-500/10 text-red-400 border-2 border-red-500 hover:bg-red-500 hover:text-black transition-colors">Přiznat relaps</button>`,
+        wire: body => body.querySelector('#reset-btn').addEventListener('click', armReset) },
+      log: { title: 'Terminál // Systémový log', color: 'text-zinc-400', html: () => `
+        <ol class="space-y-1.5 font-mono-tech text-[11px] text-zinc-400">${state.log.length
+          ? state.log.map(l => `<li class="flex gap-2"><span class="text-zinc-600 shrink-0">${l.t}</span><span>${l.msg}</span></li>`).join('')
+          : '<li class="text-zinc-600">Žádné záznamy.</li>'}</ol>` },
+    };
+
+    function openPanel(kind) {
+      const p = panels[kind];
+      relockAfterPanel = !!document.pointerLockElement;
+      if (relockAfterPanel) document.exitPointerLock();
+      panelOpen = kind; keys.clear();
+      world?.setWatch(false);
+      $('panel-title').textContent = p.title;
+      $('panel-title').className = `text-[11px] font-mono-tech uppercase tracking-widest ${p.color}`;
+      const body = $('panel-body');
+      body.innerHTML = p.html();
+      p.wire?.(body);
+      const wrap = $('panel-wrap'); wrap.classList.remove('hidden'); wrap.classList.add('flex');
+      $('panel-close').focus();
+      tick();
+    }
+    function closePanel(relock = true) {
+      if (!panelOpen) return;
+      panelOpen = null; disarm();
+      const wrap = $('panel-wrap'); wrap.classList.add('hidden'); wrap.classList.remove('flex');
+      if (relock && relockAfterPanel) tryLock();
+    }
+    $('panel-close').addEventListener('click', () => closePanel());
+    $('panel-wrap').addEventListener('click', e => { if (e.target.id === 'panel-wrap') closePanel(); });
+
+    function armReset() {
+      const btn = $('reset-btn');
+      if (!btn) return;
+      if (btn.dataset.armed) {
+        clearTimeout(armTimer);
+        const days = Math.floor((Date.now() - state.start) / DAY);
+        state.best = Math.max(state.best, days);
+        state.resets++;
+        state.start = Date.now();
+        log(`RELAPS po ${days} dnech. Série vynulována.`);
+        save(); render();
+        const flash = $('flash'); flash.style.opacity = '0.45';
+        setTimeout(() => { flash.style.opacity = '0'; }, 400);
+        closePanel();
+        toast('SÉRIE VYNULOVÁNA. Zvedni se a jdi dál.', 'red');
+        return;
+      }
+      btn.dataset.armed = '1';
+      btn.textContent = 'Opravdu? Klikni znovu';
+      btn.classList.add('bg-red-500', 'text-black', 'glow-red');
+      armTimer = setTimeout(disarm, 4000);
+    }
+    function disarm() {
+      clearTimeout(armTimer);
+      const btn = $('reset-btn');
+      if (!btn) return;
+      delete btn.dataset.armed;
+      btn.textContent = 'Přiznat relaps';
+      btn.classList.remove('bg-red-500', 'text-black', 'glow-red');
+    }
+
+    let toastTimer = null;
+    function toast(msg, tone = 'emerald') {
+      const t = $('toast');
+      t.textContent = msg;
+      t.className = `absolute left-1/2 top-20 -translate-x-1/2 bg-black/80 border-2 px-4 py-2 text-xs font-bold whitespace-nowrap toast-in ${tone === 'red' ? 'border-red-500 text-red-300' : 'border-emerald-500 text-white'}`;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.add('hidden'), 2200);
+    }
+
+    /* ---------- HUD ---------- */
+    function tick() {
+      const s = streak();
+      setText('hud-days', s.days); setText('hud-clock', s.clock);
+      setText('p-days', s.days); setText('p-clock', s.clock); setText('p-pct', s.pct + '%');
+      setText('p-best', s.best); setText('p-saved', s.saved + 'h');
+      const bar = $('p-bar'); if (bar) bar.style.width = s.pct + '%';
+      world?.redrawStreak();
+      world?.redrawWatch();
+    }
+    function render() {
+      setText('today-label', new Date().toLocaleDateString('cs-CZ', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase());
+      setText('hud-proto', `${todayDone().length}/${PROTOCOL.length}`);
+      world?.refresh();
+      tick();
+    }
+
+    /* ---------- INPUT STATE ---------- */
+    const keys = new Set();
+    let started = false;
+    const canvas = $('world');
+
+    function showOverlay(tag, title) {
+      setText('start-tag', tag); setText('start-title', title);
+      $('start-overlay').classList.remove('hidden');
+    }
+    function tryLock() {
+      try { const p = canvas.requestPointerLock(); p?.catch?.(() => {}); } catch {}
+    }
+    $('start-btn').addEventListener('click', () => {
+      started = true;
+      $('start-overlay').classList.add('hidden');
+      if (!matchMedia('(pointer: coarse)').matches) tryLock();
+    });
+    let wasLocked = false;
+    document.addEventListener('pointerlockchange', () => {
+      const locked = document.pointerLockElement === canvas;
+      if (!locked && wasLocked && !panelOpen && $('intro-screen').style.display === 'none') showOverlay('Pauza', 'Pokračovat');
+      wasLocked = locked;
+    });
+
+    window.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && panelOpen) { closePanel(false); return; }
+      if (panelOpen || !started) return;
+      if (e.code === 'KeyF' && !e.repeat) { world?.toggleWatch(); return; }
+      if (e.code === 'KeyE') { world?.useTarget(); return; }
+      if (['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','ShiftLeft','ShiftRight'].includes(e.code)) {
+        keys.add(e.code); e.preventDefault();
+      }
+    });
+    window.addEventListener('keyup', e => keys.delete(e.code));
+    window.addEventListener('blur', () => keys.clear());
+
+    if (matchMedia('(pointer: coarse)').matches) {
+      const pad = $('mobile-pad'); pad.classList.remove('hidden'); pad.classList.add('flex');
+      pad.querySelectorAll('[data-key]').forEach(b => {
+        b.addEventListener('pointerdown', e => { e.preventDefault(); keys.add(b.dataset.key); });
+        ['pointerup','pointercancel','pointerleave'].forEach(ev => b.addEventListener(ev, () => keys.delete(b.dataset.key)));
+      });
+      $('pad-use').addEventListener('click', () => world?.useTarget());
+      $('pad-watch').addEventListener('click', () => world?.toggleWatch());
+    }
+
+    setInterval(tick, 1000);
+    runFilm();
+
+    /* ---------- 3D WORLD ---------- */
+    let world = null;
+    try {
+      const THREE = await import('https://esm.sh/three@0.160.0');
+      world = buildWorld(THREE);
+      document.fonts?.ready.then(() => render());
+      render();
+    } catch (err) {
+      console.error('[v0] 3D lobby failed', err);
+      showOverlay('Chyba', '3D se nepodařilo načíst');
+    }
+
+    function buildWorld(THREE) {
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color('#07080c');
+      scene.fog = new THREE.Fog('#07080c', 20, 48);
+      const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 200);
+      camera.rotation.order = 'YXZ';
+
+      scene.add(new THREE.HemisphereLight('#a5f3fc', '#0b0d12', 1.1));
+      const sun = new THREE.DirectionalLight('#ffffff', 1.6);
+      sun.position.set(8, 18, 6); sun.castShadow = true;
+      sun.shadow.mapSize.set(2048, 2048);
+      Object.assign(sun.shadow.camera, { left: -16, right: 16, top: 16, bottom: -16 });
+      scene.add(sun);
+      const glow = (color, x, y, z, i = 10) => { const l = new THREE.PointLight(color, i, 11, 1.4); l.position.set(x, y, z); scene.add(l); return l; };
+
+      const lambert = c => new THREE.MeshLambertMaterial({ color: c });
+      const basic = (c, extra = {}) => new THREE.MeshBasicMaterial({ color: c, ...extra });
+      function box(w, h, d, mat, x, y, z) {
+        const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), typeof mat === 'string' ? lambert(mat) : mat);
+        m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true;
+        scene.add(m); return m;
+      }
+      function canvasTex(w, h, draw) {
+        const c = document.createElement('canvas'); c.width = w; c.height = h;
+        const ctx = c.getContext('2d');
+        const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+        const api = { tex, redraw() { draw(ctx, w, h); tex.needsUpdate = true; } };
+        api.redraw(); return api;
+      }
+      const MONO = '"JetBrains Mono", monospace';
+
+      /* --- targets & colliders --- */
+      const targets = [];
+      const interactive = (mesh, label, action) => { mesh.userData.it = { label, action }; targets.push(mesh); };
+      const colliders = [];
+      const solid = (cx, cz, w, d) => colliders.push({ minX: cx - w / 2, maxX: cx + w / 2, minZ: cz - d / 2, maxZ: cz + d / 2 });
+
+      /* --- platform --- */
+      const floorTex = canvasTex(32, 32, (ctx) => {
+        ctx.fillStyle = '#16161a'; ctx.fillRect(0, 0, 32, 32);
+        for (let i = 0; i < 60; i++) { ctx.fillStyle = Math.random() > .5 ? '#1b1b20' : '#121215'; ctx.fillRect((Math.random() * 16 | 0) * 2, (Math.random() * 16 | 0) * 2, 2, 2); }
+        ctx.fillStyle = '#26262c'; ctx.fillRect(0, 0, 32, 2); ctx.fillRect(0, 0, 2, 32);
+      });
+      floorTex.tex.magFilter = THREE.NearestFilter; floorTex.tex.minFilter = THREE.NearestFilter;
+      floorTex.tex.wrapS = floorTex.tex.wrapT = THREE.RepeatWrapping; floorTex.tex.repeat.set(26, 26);
+      const side = lambert('#0d0d10');
+      const floor = new THREE.Mesh(new THREE.BoxGeometry(26, 2, 26), [side, side, new THREE.MeshLambertMaterial({ map: floorTex.tex }), side, side, side]);
+      floor.position.y = -1; floor.receiveShadow = true; scene.add(floor);
+      const edge = basic('#10b981');
+      [[0, 13, 26, .12], [0, -13, 26, .12], [13, 0, .12, 26], [-13, 0, .12, 26]].forEach(([x, z, w, d]) => box(w, .08, d, edge, x, .02, z).castShadow = false);
+      // spawn pad
+      box(2.4, .06, 2.4, lambert('#0f2a22'), 0, .03, 3).castShadow = false;
+      box(1.4, .07, 1.4, basic('#10b981', { transparent: true, opacity: .35 }), 0, .04, 3).castShadow = false;
+
+      // void blocks + stars
+      const voidBlocks = [];
+      for (let i = 0; i < 26; i++) {
+        const a = Math.random() * Math.PI * 2, r = 18 + Math.random() * 14, s = .6 + Math.random() * 1.8;
+        const m = box(s, s, s, lambert(Math.random() > .7 ? '#064e3b' : '#18181b'), Math.cos(a) * r, -3 - Math.random() * 10, Math.sin(a) * r);
+        m.castShadow = false; m.userData.spin = (Math.random() - .5) * .4; voidBlocks.push(m);
+      }
+      const starGeo = new THREE.BufferGeometry(); const pts = [];
+      for (let i = 0; i < 700; i++) { const v = new THREE.Vector3().randomDirection().multiplyScalar(90); if (v.y < -30) v.y *= -1; pts.push(v.x, v.y, v.z); }
+      starGeo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+      scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: '#a1a1aa', size: .35, fog: false })));
+
+      function label(text, color, x, y, z, scale = 1) {
+        const t = canvasTex(512, 128, (ctx, w, h) => {
+          ctx.clearRect(0, 0, w, h);
+          ctx.fillStyle = 'rgba(9,9,11,.85)'; ctx.fillRect(8, 16, w - 16, h - 32);
+          ctx.strokeStyle = color; ctx.lineWidth = 6; ctx.strokeRect(8, 16, w - 16, h - 32);
+          ctx.fillStyle = color; ctx.font = `800 52px ${MONO}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(text, w / 2, h / 2 + 2);
+        });
+        const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t.tex, transparent: true, fog: false }));
+        s.scale.set(3.2 * scale, .8 * scale, 1); s.position.set(x, y, z); scene.add(s);
+        return { sprite: s, redraw: t.redraw };
+      }
+
+      /* --- NORTH: STREAK MONUMENT --- */
+      box(8, .6, 2.4, '#27272a', 0, .3, -9.5);
+      box(.8, 5, .8, '#3f3f46', -3.6, 2.5, -9.5);
+      box(.8, 5, .8, '#3f3f46', 3.6, 2.5, -9.5);
+      const frame = box(7.2, 4.4, .5, '#18181b', 0, 3.4, -9.6);
+      box(7.6, .5, .9, '#3f3f46', 0, 5.75, -9.5);
+      const streakTex = canvasTex(1024, 576, (ctx, w, h) => {
+        const s = streak();
+        ctx.fillStyle = '#03140d'; ctx.fillRect(0, 0, w, h);
+        ctx.strokeStyle = 'rgba(16,185,129,.08)'; ctx.lineWidth = 2;
+        for (let y = 0; y < h; y += 8) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+        ctx.fillStyle = '#10b981'; ctx.font = `800 40px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText('ČISTÁ SÉRIE', 56, 86);
+        ctx.fillStyle = '#ffffff'; ctx.font = `800 250px ${MONO}`; ctx.fillText(String(s.days), 48, 330);
+        const dw = ctx.measureText(String(s.days)).width;
+        ctx.fillStyle = '#71717a'; ctx.font = `700 64px ${MONO}`; ctx.fillText('DNÍ', 70 + dw, 320);
+        ctx.fillStyle = '#a1a1aa'; ctx.font = `700 60px ${MONO}`; ctx.fillText(s.clock, 56, 420);
+        ctx.textAlign = 'right'; ctx.font = `700 30px ${MONO}`;
+        ctx.fillStyle = '#71717a'; ctx.fillText('REKORD', w - 56, 86); ctx.fillText('RESETY', w - 56, 216);
+        ctx.fillStyle = '#ffffff'; ctx.font = `800 72px ${MONO}`; ctx.fillText(String(s.best), w - 56, 160); ctx.fillText(String(state.resets), w - 56, 290);
+        ctx.textAlign = 'left'; ctx.fillStyle = '#71717a'; ctx.font = `700 28px ${MONO}`; ctx.fillText(`CÍL 90 DNÍ — ${s.pct}%`, 56, 478);
+        ctx.fillStyle = '#18181b'; ctx.fillRect(56, 496, w - 112, 34);
+        ctx.fillStyle = '#10b981'; ctx.fillRect(56, 496, (w - 112) * s.pct / 100, 34);
+        ctx.strokeStyle = '#27272a'; ctx.lineWidth = 4; ctx.strokeRect(56, 496, w - 112, 34);
+      });
+      const screen = new THREE.Mesh(new THREE.PlaneGeometry(6.6, 3.8), basic('#ffffff', { map: streakTex.tex }));
+      screen.position.set(0, 3.4, -9.34); scene.add(screen);
+      interactive(screen, 'Monument — detail série', () => openPanel('streak'));
+      interactive(frame, 'Monument — detail série', () => openPanel('streak'));
+      solid(0, -9.5, 8, 2.4);
+      glow('#10b981', 0, 3, -7, 14);
+
+      /* --- EAST: PROTOCOL PILLARS --- */
+      const pillars = PROTOCOL.map((p, i) => {
+        const z = -3.75 + i * 1.5;
+        const base = box(.9, 1.1, .9, '#27272a', 8, .55, z);
+        const mat = new THREE.MeshLambertMaterial({ color: '#3f3f46', emissive: '#000000' });
+        const cube = box(.6, .6, .6, mat, 8, 1.65, z);
+        const act = () => { const on = toggleCheck(p.id); render(); toast(on ? `SPLNĚNO: ${p.label}` : `ZRUŠENO: ${p.label}`, on ? 'emerald' : 'red'); };
+        interactive(base, p.label, act); interactive(cube, p.label, act);
+        solid(8, z, .9, .9);
+        return { p, cube, mat, z };
+      });
+      const boardTex = canvasTex(1536, 560, (ctx, w, h) => {
+        const done = todayDone();
+        ctx.fillStyle = '#0b0d12'; ctx.fillRect(0, 0, w, h);
+        ctx.strokeStyle = '#22d3ee'; ctx.lineWidth = 10; ctx.strokeRect(5, 5, w - 10, h - 10);
+        ctx.fillStyle = '#22d3ee'; ctx.font = `800 64px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText('DENNÍ PROTOKOL', 50, 100);
+        ctx.textAlign = 'right'; ctx.fillStyle = '#ffffff'; ctx.fillText(`${done.length}/${PROTOCOL.length}`, w - 50, 100);
+        const colW = (w - 100) / PROTOCOL.length;
+        PROTOCOL.forEach((p, i) => {
+          const x = 50 + i * colW, on = done.includes(p.id);
+          ctx.fillStyle = on ? '#052e22' : '#18181b'; ctx.fillRect(x + 8, 150, colW - 16, 360);
+          ctx.strokeStyle = on ? '#10b981' : '#3f3f46'; ctx.lineWidth = 6; ctx.strokeRect(x + 8, 150, colW - 16, 360);
+          ctx.textAlign = 'center';
+          ctx.fillStyle = on ? '#10b981' : '#52525b'; ctx.font = `800 120px ${MONO}`; ctx.fillText(on ? '✓' : String(i + 1).padStart(2, '0'), x + colW / 2, 330);
+          ctx.fillStyle = on ? '#d1fae5' : '#a1a1aa'; ctx.font = `800 40px ${MONO}`; ctx.fillText(p.short, x + colW / 2, 440);
+        });
+      });
+      const board = new THREE.Mesh(new THREE.PlaneGeometry(9.2, 3.35), basic('#ffffff', { map: boardTex.tex }));
+      board.position.set(10.38, 3.2, 0); board.rotation.y = -Math.PI / 2; scene.add(board);
+      box(.3, 3.8, 9.6, '#18181b', 10.55, 3.2, 0);
+      box(.4, 1.4, .4, '#3f3f46', 10.55, .7, -4.4); box(.4, 1.4, .4, '#3f3f46', 10.55, .7, 4.4);
+      interactive(board, 'Denní protokol — seznam', () => openPanel('protocol'));
+      solid(10.55, 0, .5, 9.8);
+      glow('#22d3ee', 8.5, 3, 0, 9);
+
+      /* --- WEST: RELAPSE BUTTON --- */
+      const hazardTex = canvasTex(128, 128, (ctx, w, h) => {
+        ctx.fillStyle = '#18181b'; ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = '#b91c1c';
+        for (let i = -h; i < w; i += 32) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i + 16, 0); ctx.lineTo(i + 16 + h, h); ctx.lineTo(i + h, h); ctx.fill(); }
+      });
+      hazardTex.tex.magFilter = THREE.NearestFilter; hazardTex.tex.wrapS = hazardTex.tex.wrapT = THREE.RepeatWrapping; hazardTex.tex.repeat.set(2, 2);
+      const hz = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 3.6), new THREE.MeshLambertMaterial({ map: hazardTex.tex }));
+      hz.rotation.x = -Math.PI / 2; hz.position.set(-9, .03, 0); hz.receiveShadow = true; scene.add(hz);
+      const ped = box(1.4, 1.1, 1.4, '#27272a', -9, .55, 0);
+      box(1.1, .12, 1.1, '#18181b', -9, 1.16, 0);
+      const btnMat = new THREE.MeshLambertMaterial({ color: '#ef4444', emissive: '#7f1d1d' });
+      const redBtn = new THREE.Mesh(new THREE.CylinderGeometry(.42, .48, .28, 20), btnMat);
+      redBtn.position.set(-9, 1.36, 0); redBtn.castShadow = true; scene.add(redBtn);
+      const cage = new THREE.Mesh(new THREE.BoxGeometry(1.8, 2.2, 1.8), basic('#ef4444', { transparent: true, opacity: .06, depthWrite: false }));
+      cage.position.set(-9, 1.1, 0); scene.add(cage);
+      const cageEdges = new THREE.LineSegments(new THREE.EdgesGeometry(cage.geometry), new THREE.LineBasicMaterial({ color: '#ef4444' }));
+      cageEdges.position.copy(cage.position); scene.add(cageEdges);
+      [ped, redBtn, cage].forEach(m => interactive(m, 'Přiznat relaps', () => openPanel('reset')));
+      label('SELHÁNÍ', '#ef4444', -9, 3, 0);
+      solid(-9, 0, 1.8, 1.8);
+      const redLight = glow('#ef4444', -9, 2, 0, 10);
+
+      /* --- SOUTH: TERMINAL + FILM PORTAL --- */
+      box(2.8, 1, 1.2, '#27272a', -3.5, .5, 10);
+      box(2.6, 1.7, .25, '#18181b', -3.5, 1.95, 10.45);
+      const termTex = canvasTex(768, 480, (ctx, w, h) => {
+        ctx.fillStyle = '#020617'; ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = '#22d3ee'; ctx.font = `800 34px ${MONO}`; ctx.textAlign = 'left'; ctx.fillText('> SYS.LOG', 28, 54);
+        ctx.font = `400 24px ${MONO}`;
+        const rows = state.log.length ? state.log.slice(0, 11) : [{ t: '--', msg: 'Žádné záznamy.' }];
+        rows.forEach((l, i) => {
+          ctx.fillStyle = '#475569'; ctx.fillText(l.t, 28, 104 + i * 34);
+          ctx.fillStyle = l.msg.startsWith('RELAPS') ? '#f87171' : '#6ee7b7';
+          const m = l.msg.length > 30 ? l.msg.slice(0, 29) + '…' : l.msg;
+          ctx.fillText(m, 250, 104 + i * 34);
+        });
+      });
+      const term = new THREE.Mesh(new THREE.PlaneGeometry(2.36, 1.48), basic('#ffffff', { map: termTex.tex }));
+      term.position.set(-3.5, 1.95, 10.31); term.rotation.y = Math.PI; scene.add(term);
+      interactive(term, 'Terminál — systémový log', () => openPanel('log'));
+      label('SYS.LOG', '#a1a1aa', -3.5, 3.4, 10.2, .8);
+      solid(-3.5, 10.1, 2.8, 1.4);
+
+      const portalFrame = '#3f3f46';
+      box(.6, 4.4, .6, portalFrame, 2, 2.2, 10.5); box(.6, 4.4, .6, portalFrame, 5, 2.2, 10.5);
+      box(3.6, .6, .6, portalFrame, 3.5, 4.4, 10.5);
+      const portalMat = basic('#22d3ee', { transparent: true, opacity: .45, side: THREE.DoubleSide, depthWrite: false });
+      const portal = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 4.1), portalMat);
+      portal.position.set(3.5, 2.05, 10.5); scene.add(portal);
+      interactive(portal, 'Portál — přehrát film', replayIntro);
+      label('FILM // INTRO', '#22d3ee', 3.5, 5.3, 10.5, .9);
+      solid(2, 10.5, .6, .6); solid(5, 10.5, .6, .6);
+      glow('#22d3ee', 3.5, 2, 9.4, 10);
+
+      /* --- DECOR: blocky trees + crystals --- */
+      function tree(x, z) {
+        box(.5, 2, .5, '#3f2a1d', x, 1, z);
+        box(2, 1.2, 2, '#065f46', x, 2.5, z); box(1.2, .8, 1.2, '#047857', x, 3.4, z);
+        solid(x, z, .6, .6);
+      }
+      [[-11, -11], [11, -11], [-11, 11], [11, 11], [-6, -11.5], [6, 11.8]].forEach(([x, z]) => tree(x, z));
+      const crystals = [[-5.5, -5.5], [5.5, -5.5], [-5.5, 6], [5.5, 6]].map(([x, z]) => {
+        const c = new THREE.Mesh(new THREE.OctahedronGeometry(.4), basic('#34d399'));
+        c.position.set(x, 1.4, z); scene.add(c);
+        box(.5, .4, .5, '#27272a', x, .2, z); solid(x, z, .5, .5);
+        return c;
+      });
+
+      /* --- PLAYER --- */
+      const player = { x: 0, z: 3, y: 0, vy: 0, yaw: 0, pitch: -.05 };
+      const R = .35, LIMIT = 12.5;
+      const hits = (x, z) => colliders.some(c => x + R > c.minX && x - R < c.maxX && z + R > c.minZ && z - R < c.maxZ);
+      function look(dx, dy, sens) {
+        player.yaw -= dx * sens;
+        player.pitch = Math.max(-1.45, Math.min(1.45, player.pitch - dy * sens));
+      }
+
+      /* --- BODY: legs + torso (world space, visible when looking down) --- */
+      const SKIN = '#e8b48a', SHIRT = '#27272a', PANTS = '#1f2a44', SHOE = '#0a0a0a';
+      const body = new THREE.Group(); scene.add(body);
+      const part = (parent, w, h, d, color, x, y, z) => {
+        const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), lambert(color));
+        m.position.set(x, y, z); m.castShadow = true; parent.add(m); return m;
+      };
+      part(body, .5, .08, .26, '#10b981', 0, .79, .02);
+      const legs = [-.125, .125].map(x => {
+        const hip = new THREE.Group(); hip.position.set(x, .75, -.08); body.add(hip);
+        part(hip, .23, .6, .23, PANTS, 0, -.3, 0);
+        part(hip, .25, .15, .27, SHOE, 0, -.675, -.02);
+        return hip;
+      });
+
+      /* --- ARMS (separate overlay pass so they never clip into walls) --- */
+      const armScene = new THREE.Scene();
+      armScene.add(new THREE.HemisphereLight('#e0f2fe', '#1f2937', 1.6));
+      const armSun = new THREE.DirectionalLight('#ffffff', 1.4); armSun.position.set(1, 2, 1.5); armScene.add(armSun);
+      const armCam = new THREE.PerspectiveCamera(70, 1, .01, 10);
+
+      function makeArm(withWatch) {
+        const shoulder = new THREE.Group();
+        const sleeve = new THREE.Mesh(new THREE.BoxGeometry(.15, .15, .48), lambert(SHIRT)); sleeve.position.z = -.24; shoulder.add(sleeve);
+        const cuff = new THREE.Mesh(new THREE.BoxGeometry(.16, .16, .04), lambert('#10b981')); cuff.position.z = -.48; shoulder.add(cuff);
+        const hand = new THREE.Mesh(new THREE.BoxGeometry(.14, .14, .14), lambert(SKIN)); hand.position.z = -.57; shoulder.add(hand);
+        armScene.add(shoulder);
+        return shoulder;
+      }
+      const rightArm = makeArm(false), leftArm = makeArm(true);
+
+      /* watch */
+      const watch = { up: false, t: 0, period: new Date().getHours() < 12 ? 'AM' : 'PM' };
+      const watchTex = canvasTex(512, 512, (ctx, w, h) => drawWatch(ctx, w, h));
+      const strap = new THREE.Mesh(new THREE.BoxGeometry(.17, .17, .08), lambert('#0a0a0a')); strap.position.z = -.42; leftArm.add(strap);
+      const caseMesh = new THREE.Mesh(new THREE.CylinderGeometry(.095, .095, .035, 32), lambert('#3f3f46')); caseMesh.position.set(0, .09, -.42); leftArm.add(caseMesh);
+      const face = new THREE.Mesh(new THREE.CircleGeometry(.085, 40), basic('#ffffff', { map: watchTex.tex }));
+      face.position.set(0, .109, -.42); face.rotation.set(-Math.PI / 2, 0, Math.PI / 2); leftArm.add(face);
+      const crown = new THREE.Mesh(new THREE.BoxGeometry(.03, .02, .02), lambert('#a1a1aa')); crown.position.set(0, .09, -.52); leftArm.add(crown);
+
+      const restPos = { r: new THREE.Vector3(.34, -.36, -.22), l: new THREE.Vector3(-.34, -.36, -.22) };
+      const restQ = { r: new THREE.Quaternion().setFromEuler(new THREE.Euler(.12, .1, 0)), l: new THREE.Quaternion().setFromEuler(new THREE.Euler(.12, -.1, 0)) };
+      const raisedPos = new THREE.Vector3(-.47, -.06, -.58);
+      const raisedQ = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(
+        new THREE.Vector3(0, -1, 0), new THREE.Vector3(0, 0, 1), new THREE.Vector3(-1, 0, 0)));
+      raisedQ.multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, -.12)));
+
+      function drawWatch(ctx, w, h) {
+        const now = new Date(), h24 = now.getHours(), cur = h24 < 12 ? 'AM' : 'PM';
+        const per = watch.period, off = per === 'AM' ? 0 : 12, u = usageToday();
+        const cx = w / 2, cy = h / 2;
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = '#050807'; ctx.beginPath(); ctx.arc(cx, cy, 256, 0, Math.PI * 2); ctx.fill();
+        // hour ring: brightness = minutes spent in that hour
+        for (let i = 0; i < 12; i++) {
+          const hour = off + i, frac = Math.min(1, u[hour] / 3600);
+          const a0 = -Math.PI / 2 + i * Math.PI / 6 + .04, a1 = a0 + Math.PI / 6 - .08;
+          ctx.lineWidth = 30; ctx.lineCap = 'butt';
+          ctx.strokeStyle = '#1c1c20'; ctx.beginPath(); ctx.arc(cx, cy, 214, a0, a1); ctx.stroke();
+          if (u[hour] > 0) {
+            ctx.strokeStyle = `rgba(16,185,129,${(.3 + .7 * frac).toFixed(2)})`;
+            ctx.beginPath(); ctx.arc(cx, cy, 214, a0, a0 + (a1 - a0) * Math.max(.08, frac)); ctx.stroke();
+          }
+          if (per === cur && hour === h24) {
+            ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 6;
+            ctx.beginPath(); ctx.arc(cx, cy, 240, a0, a1); ctx.stroke();
+          }
+        }
+        ctx.fillStyle = '#52525b'; ctx.font = `700 24px ${MONO}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        [[12, 0], [3, 1], [6, 2], [9, 3]].forEach(([n, q]) => {
+          const a = -Math.PI / 2 + q * Math.PI / 2; ctx.fillText(String(n), cx + Math.cos(a) * 168, cy + Math.sin(a) * 168);
+        });
+        const h12 = h24 % 12 || 12, pad = n => String(n).padStart(2, '0');
+        ctx.fillStyle = '#ffffff'; ctx.font = `800 96px ${MONO}`; ctx.fillText(`${h12}:${pad(now.getMinutes())}`, cx, 176);
+        ctx.fillStyle = '#71717a'; ctx.font = `700 24px ${MONO}`; ctx.fillText(`:${pad(now.getSeconds())}  NYNÍ ${cur}`, cx, 236);
+        // AM / PM pills
+        ['AM', 'PM'].forEach((p, i) => {
+          const x = cx - 118 + i * 126, y = 262, sel = p === per;
+          ctx.fillStyle = sel ? '#10b981' : '#111113'; ctx.fillRect(x, y, 110, 56);
+          ctx.strokeStyle = sel ? '#34d399' : '#3f3f46'; ctx.lineWidth = 4; ctx.strokeRect(x, y, 110, 56);
+          ctx.fillStyle = sel ? '#04110c' : '#71717a'; ctx.font = `800 34px ${MONO}`; ctx.fillText(p, x + 55, y + 30);
+          if (p === cur) { ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(x + 98, y + 12, 7, 0, Math.PI * 2); ctx.fill(); }
+        });
+        const spent = u.slice(off, off + 12).reduce((a, b) => a + b, 0);
+        const total = u.reduce((a, b) => a + b, 0);
+        ctx.fillStyle = '#71717a'; ctx.font = `700 22px ${MONO}`; ctx.fillText(`DNES ${per}`, cx, 354);
+        ctx.fillStyle = '#ffffff'; ctx.font = `800 44px ${MONO}`; ctx.fillText(fmtDur(spent), cx, 392);
+        ctx.fillStyle = '#22d3ee'; ctx.font = `700 20px ${MONO}`; ctx.fillText(`CELKEM ${fmtDur(total)}`, cx, 430);
+      }
+      function setWatch(up) {
+        if (up === watch.up) return;
+        watch.up = up;
+        if (up) { watch.period = new Date().getHours() < 12 ? 'AM' : 'PM'; watchTex.redraw(); }
+        $('watch-hint').classList.toggle('hidden', !up);
+        setText('watch-live', up ? `Hodinky: ${watch.period}, dnes ${fmtDur(usageToday().slice(watch.period === 'AM' ? 0 : 12, watch.period === 'AM' ? 12 : 24).reduce((a, b) => a + b, 0))}` : '');
+      }
+      function setPeriod(p) {
+        watch.period = p; watchTex.redraw();
+        const u = usageToday(), off = p === 'AM' ? 0 : 12;
+        setText('watch-live', `${p}: ${fmtDur(u.slice(off, off + 12).reduce((a, b) => a + b, 0))}`);
+      }
+
+      /* --- POINTER --- */
+      canvas.addEventListener('contextmenu', e => e.preventDefault());
+      const ndc = new THREE.Vector2(0, 0), center = new THREE.Vector2(0, 0);
+      let hoverNdc = null, drag = null;
+      const toNdc = e => { const r = canvas.getBoundingClientRect(); return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1); };
+      canvas.addEventListener('pointerdown', e => {
+        if (!started || panelOpen) return;
+        if (watch.up) {
+          if (e.pointerType === 'mouse') setPeriod(e.button === 2 ? 'PM' : 'AM');
+          else setPeriod(watch.period === 'AM' ? 'PM' : 'AM');
+          return;
+        }
+        if (drag) return;
+        drag = { id: e.pointerId, x: e.clientX, y: e.clientY, moved: 0, touch: e.pointerType !== 'mouse' };
+        canvas.setPointerCapture?.(e.pointerId);
+      });
+      canvas.addEventListener('pointermove', e => {
+        if (document.pointerLockElement === canvas) { look(e.movementX, e.movementY, .0022); return; }
+        if (e.pointerType === 'mouse') hoverNdc = toNdc(e);
+        if (drag && e.pointerId === drag.id) {
+          const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+          look(dx, dy, drag.touch ? .006 : .004);
+          drag.moved += Math.abs(dx) + Math.abs(dy); drag.x = e.clientX; drag.y = e.clientY;
+        }
+      });
+      canvas.addEventListener('pointerleave', () => { hoverNdc = null; });
+      const endDrag = e => {
+        if (!drag || e.pointerId !== drag.id) return;
+        const wasTap = drag.moved < 8; drag = null;
+        if (!wasTap || !started || panelOpen) return;
+        const locked = document.pointerLockElement === canvas;
+        const hit = pick(locked ? center : toNdc(e));
+        hit?.userData.it.action();
+      };
+      canvas.addEventListener('pointerup', endDrag);
+      canvas.addEventListener('pointercancel', () => { drag = null; });
+
+      const ray = new THREE.Raycaster(); ray.far = 7;
+      function pick(v) {
+        ray.setFromCamera(v, camera);
+        const h = ray.intersectObjects(targets, false)[0];
+        return h ? h.object : null;
+      }
+      let target = null;
+      function useTarget() { target?.userData.it.action(); }
+
+      /* --- LOOP --- */
+      function resize() {
+        const w = innerWidth, h = innerHeight;
+        renderer.setSize(w, h, false); canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+        camera.aspect = w / h; camera.updateProjectionMatrix();
+        armCam.aspect = w / h; armCam.updateProjectionMatrix();
+      }
+      renderer.autoClear = false;
+      camera.near = .05; camera.updateProjectionMatrix();
+      addEventListener('resize', resize); resize();
+
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const clock = new THREE.Clock();
+      let bob = 0, lastPortal = 0, swing = 0;
+      renderer.setAnimationLoop(() => {
+        const dt = Math.min(clock.getDelta(), .05), t = clock.elapsedTime;
+        let moving = false;
+        if (started && !panelOpen) {
+          const f = (keys.has('KeyW') || keys.has('ArrowUp') ? 1 : 0) - (keys.has('KeyS') || keys.has('ArrowDown') ? 1 : 0);
+          const s = (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) - (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0);
+          const speed = keys.has('ShiftLeft') || keys.has('ShiftRight') ? 8 : 4.5;
+          let mx = -Math.sin(player.yaw) * f + Math.cos(player.yaw) * s;
+          let mz = -Math.cos(player.yaw) * f - Math.sin(player.yaw) * s;
+          const len = Math.hypot(mx, mz);
+          if (len > 0) {
+            moving = player.y === 0;
+            mx = mx / len * speed * dt; mz = mz / len * speed * dt;
+            const nx = Math.max(-LIMIT, Math.min(LIMIT, player.x + mx));
+            if (!hits(nx, player.z)) player.x = nx;
+            const nz = Math.max(-LIMIT, Math.min(LIMIT, player.z + mz));
+            if (!hits(player.x, nz)) player.z = nz;
+            if (player.y === 0 && !reduced) bob += dt * speed * 2.2;
+          }
+          if (keys.has('Space') && player.y === 0) player.vy = 6.5;
+          player.vy -= 18 * dt; player.y = Math.max(0, player.y + player.vy * dt);
+          if (player.y === 0) player.vy = 0;
+
+          // walk through portal
+          if (Math.abs(player.x - 3.5) < 1.1 && Math.abs(player.z - 10.5) < .35 && t - lastPortal > 2) {
+            lastPortal = t; player.z = 9.2; replayIntro();
+          }
+        }
+        camera.position.set(player.x, 1.6 + player.y + Math.sin(bob) * .05, player.z);
+        camera.rotation.set(player.pitch, player.yaw, 0);
+
+        // body + legs
+        swing += ((moving ? 1 : 0) - swing) * Math.min(1, dt * 10);
+        const legA = Math.sin(bob) * .7 * swing;
+        body.position.set(player.x, player.y, player.z); body.rotation.y = player.yaw;
+        legs[0].rotation.x = legA; legs[1].rotation.x = -legA;
+
+        // arms + watch
+        watch.t += ((watch.up ? 1 : 0) - watch.t) * Math.min(1, dt * 9);
+        const armBob = Math.sin(bob) * .035 * swing, breathe = reduced ? 0 : Math.sin(t * 1.6) * .006;
+        rightArm.position.copy(restPos.r).add(new THREE.Vector3(0, armBob + breathe, Math.cos(bob) * .02 * swing));
+        rightArm.quaternion.copy(restQ.r);
+        rightArm.rotateX(Math.sin(bob) * .18 * swing);
+        leftArm.position.copy(restPos.l).add(new THREE.Vector3(0, -armBob + breathe, 0)).lerp(raisedPos, watch.t);
+        leftArm.quaternion.slerpQuaternions(restQ.l, raisedQ, watch.t);
+        if (watch.t < .5) leftArm.rotateX(-Math.sin(bob) * .18 * swing * (1 - watch.t * 2));
+
+        // hover target
+        const locked = document.pointerLockElement === canvas;
+        target = started && !panelOpen && !watch.up ? pick(locked || !hoverNdc ? center : hoverNdc) : null;
+        $('crosshair').style.opacity = watch.up ? '0' : '1';
+        const prompt = $('prompt');
+        if (target) { prompt.classList.remove('hidden'); setText('prompt-text', target.userData.it.label); $('crosshair').style.filter = 'drop-shadow(0 0 4px #10b981) hue-rotate(0deg)'; }
+        else { prompt.classList.add('hidden'); $('crosshair').style.filter = ''; }
+        canvas.style.cursor = !locked && target ? 'pointer' : (locked ? 'none' : 'grab');
+
+        // animation
+        if (!reduced) {
+          const done = todayDone();
+          pillars.forEach((pl, i) => {
+            const on = done.includes(pl.p.id);
+            pl.cube.rotation.y = t * (on ? 1.4 : .4) + i;
+            pl.cube.position.y = 1.65 + Math.sin(t * 2 + i) * (on ? .12 : .04);
+          });
+          crystals.forEach((c, i) => { c.rotation.y = t + i; c.position.y = 1.4 + Math.sin(t * 1.5 + i) * .15; });
+          voidBlocks.forEach(b => { b.rotation.x += b.userData.spin * dt; b.rotation.y += b.userData.spin * dt; });
+          portalMat.opacity = .35 + Math.sin(t * 3) * .12;
+          redLight.intensity = 8 + Math.sin(t * 4) * 3;
+          btnMat.emissive.setHSL(0, .8, .2 + Math.sin(t * 4) * .06);
+        }
+        renderer.clear();
+        renderer.render(scene, camera);
+        if (started) { renderer.clearDepth(); renderer.render(armScene, armCam); }
+      });
+
+      return {
+        useTarget,
+        toggleWatch: () => setWatch(!watch.up),
+        setWatch,
+        redrawWatch: () => watchTex.redraw(),
+        redrawStreak: () => streakTex.redraw(),
+        refresh() {
+          const done = todayDone();
+          pillars.forEach(pl => {
+            const on = done.includes(pl.p.id);
+            pl.mat.color.set(on ? '#10b981' : '#3f3f46');
+            pl.mat.emissive.set(on ? '#065f46' : '#000000');
+          });
+          boardTex.redraw(); termTex.redraw(); streakTex.redraw();
+        },
+      };
+    }
+  </script>
+</body>
+</html>
