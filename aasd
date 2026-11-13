@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HARDCORE RESET // 3D PWA Game</title>
+    <meta name="theme-color" content="#090d16">
+    <link rel="manifest" href="manifest.json">
+    <style>
+        :root {
+            --bg: #090d16;
+            --panel: rgba(17, 24, 39, 0.85);
+            --border: #1f293d;
+            --accent: #00ff66;
+            --accent-glow: rgba(0, 255, 102, 0.25);
+            --text: #f3f4f6;
+            --text-muted: #9ca3af;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace, system-ui, -apple-system;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #game {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* HUD overlay */
+        .hud-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 1.5rem;
+        }
+
+        .interactive {
+            pointer-events: auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: var(--accent);
+            text-shadow: 0 0 10px var(--accent-glow);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stats-hud {
+            display: flex;
+            gap: 2rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .stats-hud span {
+            color: var(--text);
+            font-weight: bold;
+        }
+
+        /* UI Panel s úkoly */
+        .sidebar {
+            position: absolute;
+            right: 1.5rem;
+            top: 6rem;
+            width: 320px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .sidebar h2 {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .task-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.65rem 0.85rem;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .task-item:hover {
+            border-color: var(--accent);
+            background: rgba(0, 255, 102, 0.05);
+        }
+
+        .task-item.done {
+            opacity: 0.4;
+            text-decoration: line-through;
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        /* Pokyny pro ovládání */
+        .instructions {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            align-self: flex-start;
+            backdrop-filter: blur(10px);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .instructions kbd {
+            background: var(--border);
+            color: var(--text);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: 100%;
+            margin-top: 0.5rem;
+            box-shadow: 0 0 10px var(--accent-glow);
+            transition: transform 0.1s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 0 20px var(--accent);
+        }
+
+        /* Zaměřovač */
+        .crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 5;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game"></div>
+    <div class="crosshair"></div>
+
+    <div class="hud-overlay">
+        <header class="interactive">
+            <div class="logo">⚡ HARDCORE RESET // 3D</div>
+            <div class="stats-hud">
+                <div>LEVEL: <span id="level">1</span></div>
+                <div>XP: <span id="xp">0</span>/100</div>
+            </div>
+        </header>
+
+        <div class="sidebar interactive">
+            <h2>Bakalářské Úkoly</h2>
+            <ul class="task-list">
+                <li class="task-item" onclick="completeTask(this, 35)">
+                    <span>1. Ranní kódovací blok</span>
+                    <small>+35 XP</small>
+                </li>
+                <li class="task-item" onclick="completeTask(this, 35)">
+                    <span>2. Fyzický trénink / Racket</span>
+                    <small>+35 XP</small>
+                </li>
+                <li class="task-item" onclick="completeTask(this, 30)">
+                    <span>3. Revize textu práce</span>
+                    <small>+30 XP</small>
+                </li>
+            </ul>
+            <button class="btn" onclick="teleport()">Návrat na ostrov</button>
+        </div>
+
+        <div class="instructions">
+            Pohyb: <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> | Rozhlížení: <kbd>Myš</kbd> | Skok: <kbd>Mezerník</kbd> | Běh: <kbd>Shift</kbd><br>
+            *Kliknutím kamkoliv do hry aktivuješ ovládání myší.*
+        </div>
+    </div>
+
+    <script type="module">
+        import * as THREE from "https://unpkg.com/three@0.165.0/build/three.module.js";
+        import { PointerLockControls } from "https://unpkg.com/three@0.165.0/examples/jsm/controls/PointerLockControls.js";
+
+        const container = document.getElementById("game");
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color("#9ccaff");
+        scene.fog = new THREE.Fog("#9ccaff", 25, 100);
+
+        const camera = new THREE.PerspectiveCamera(
+            75, window.innerWidth / window.innerHeight, 0.1, 150
+        );
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        container.appendChild(renderer.domElement);
+
+        const controls = new PointerLockControls(camera, document.body);
+
+        // Zamknout myš jen kliknutím do herní scény, ne do UI
+        renderer.domElement.addEventListener("click", () => {
+            if (!controls.isLocked) controls.lock();
+        });
+
+        // Světla
+        scene.add(new THREE.HemisphereLight("#edf7ff", "#59617c", 1.8));
+
+        const sun = new THREE.DirectionalLight("#fff1d2", 2.2);
+        sun.position.set(-10, 20, 10);
+        sun.castShadow = true;
+        scene.add(sun);
+
+        // Ostrovy (Platformy)
+        const platforms = [
+            { x: 0,   y: 1.5,   z: 0,    radius: 5.0, color: "#78bf8b" },
+            { x: -12, y: 6.5,   z: -10,  radius: 3.2, color: "#7dc996" },
+            { x: 12,  y: 8.2,   z: -8,   radius: 3.6, color: "#83c995" },
+            { x: -14, y: 10.5,  z: 10,   radius: 3.0, color: "#73b58f" },
+            { x: 15,  y: 5.0,   z: 12,   radius: 3.5, color: "#78bf8b" }
+        ];
+
+        const materials = {
+            grass: new THREE.MeshStandardMaterial({ color: "#78bf8b", roughness: 1 }),
+            dirt: new THREE.MeshStandardMaterial({ color: "#65526f", roughness: 1 }),
+            rock: new THREE.MeshStandardMaterial({ color: "#9889a7", roughness: 1 }),
+            trunk: new THREE.MeshStandardMaterial({ color: "#765340", roughness: 1 }),
+            leaves: new THREE.MeshStandardMaterial({ color: "#56b982", roughness: 1 })
+        };
+
+        function createIsland(p) {
+            const island = new THREE.Group();
+            island.position.set(p.x, p.y, p.z);
+            scene.add(island);
+
+            const top = new THREE.Mesh(
+                new THREE.CylinderGeometry(p.radius, p.radius * 1.15, 1.2, 12),
+                new THREE.MeshStandardMaterial({ color: p.color, roughness: 1 })
+            );
+            top.castShadow = true;
+            top.receiveShadow = true;
+            island.add(top);
+
+            const underside = new THREE.Mesh(
+                new THREE.ConeGeometry(p.radius * 0.85, 4, 10),
+                materials.dirt
+            );
+            underside.position.y = -2.2;
+            underside.castShadow = true;
+            island.add(underside);
+
+            // Dekorativní kameny a stromy
+            for (let i = 0; i < 5; i++) {
+                const rock = new THREE.Mesh(
+                    new THREE.DodecahedronGeometry(0.35 + Math.random() * 0.3),
+                    materials.rock
+                );
+                rock.position.set(
+                    (Math.random() - 0.5) * p.radius * 1.4,
+                    0.75,
+                    (Math.random() - 0.5) * p.radius * 1.4
+                );
+                island.add(rock);
+            }
+
+            for (let i = 0; i < 3; i++) {
+                const x = (Math.random() - 0.5) * p.radius;
+                const z = (Math.random() - 0.5) * p.radius;
+
+                const trunk = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.3, 1.3, 0.3),
+                    materials.trunk
+                );
+                trunk.position.set(x, 1.2, z);
+                island.add(trunk);
+
+                const leaves = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.75, 10, 10),
+                    materials.leaves
+                );
+                leaves.position.set(x, 2.1, z);
+                leaves.castShadow = true;
+                island.add(leaves);
+            }
+        }
+
+        platforms.forEach(createIsland);
+
+        // Mraky
+        const clouds = [];
+        const cloudMaterial = new THREE.MeshStandardMaterial({
+            color: "#ffffff",
+            transparent: true,
+            opacity: 0.72
+        });
+
+        function createCloud(x, y, z, scale) {
+            const cloud = new THREE.Group();
+            cloud.position.set(x, y, z);
+            cloud.scale.setScalar(scale);
+
+            for (const [px, py, pz, size] of [
+                [-1, 0, 0, 1],
+                [0, 0.35, 0, 1.3],
+                [1, 0, 0, 0.9]
+            ]) {
+                const puff = new THREE.Mesh(
+                    new THREE.SphereGeometry(size, 14, 12),
+                    cloudMaterial
+                );
+                puff.position.set(px, py, pz);
+                cloud.add(puff);
+            }
+
+            scene.add(cloud);
+            clouds.push(cloud);
+        }
+
+        createCloud(-8, 10, 2, 1.2);
+        createCloud(9, 14, 3, 1.4);
+        createCloud(1, 17, -12, 1.6);
+        createCloud(16, 8, -15, 0.9);
+
+        // Hráč
+        const PLAYER_HEIGHT = 1.7;
+        const startPlatform = platforms[0];
+        camera.position.set(
+            startPlatform.x,
+            startPlatform.y + 0.6 + PLAYER_HEIGHT,
+            startPlatform.z
+        );
+
+        // Pohyb a skákání
+        const keys = {};
+        let verticalVelocity = 0;
+        let grounded = true;
+
+        window.addEventListener("keydown", (event) => {
+            keys[event.code] = true;
+
+            if (
+                event.code === "Space" &&
+                grounded &&
+                controls.isLocked
+            ) {
+                verticalVelocity = 7;
+                grounded = false;
+            }
+        });
+
+        window.addEventListener("keyup", (event) => {
+            keys[event.code] = false;
+        });
+
+        function getIslandFloor(x, z) {
+            for (const p of platforms) {
+                const distance = Math.hypot(x - p.x, z - p.z);
+                if (distance < p.radius - 0.35) {
+                    return p.y + 0.6;
+                }
+            }
+            return null;
+        }
+
+        function respawn() {
+            camera.position.set(
+                startPlatform.x,
+                startPlatform.y + 0.6 + PLAYER_HEIGHT,
+                startPlatform.z
+            );
+            verticalVelocity = 0;
+            grounded = true;
+        }
+
+        // XP & Level systém
+        let xp = Number(localStorage.getItem("hw_xp")) || 0;
+        let level = Number(localStorage.getItem("hw_level")) || 1;
+
+        function updateHUD() {
+            document.getElementById("xp").textContent = xp % 100;
+            document.getElementById("level").textContent = level;
+            localStorage.setItem("hw_xp", xp);
+            localStorage.setItem("hw_level", level);
+        }
+
+        window.completeTask = (element, reward) => {
+            element.classList.toggle("done");
+
+            if (element.classList.contains("done")) {
+                xp += reward;
+            } else {
+                xp = Math.max(0, xp - reward);
+            }
+
+            while (xp >= level * 100) {
+                level++;
+            }
+
+            updateHUD();
+        };
+
+        window.teleport = () => {
+            respawn();
+        };
+
+        updateHUD();
+
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const delta = Math.min(clock.getDelta(), 0.05);
+
+            if (controls.isLocked) {
+                const sprinting = keys["ShiftLeft"] || keys["ShiftRight"];
+                const speed = sprinting ? 10 : 6;
+
+                const forward = new THREE.Vector3();
+                camera.getWorldDirection(forward);
+                forward.y = 0;
+                forward.normalize();
+
+                const right = new THREE.Vector3()
+                    .crossVectors(forward, new THREE.Vector3(0, 1, 0))
+                    .normalize();
+
+                const move = new THREE.Vector3();
+
+                if (keys["KeyW"]) move.add(forward);
+                if (keys["KeyS"]) move.sub(forward);
+                if (keys["KeyD"]) move.add(right);
+                if (keys["KeyA"]) move.sub(right);
+
+                if (move.lengthSq() > 0) {
+                    move.normalize();
+                    camera.position.addScaledVector(move, speed * delta);
+                }
+
+                // Gravitace
+                verticalVelocity -= 20 * delta;
+                camera.position.y += verticalVelocity * delta;
+
+                const floor = getIslandFloor(camera.position.x, camera.position.z);
+
+                if (
+                    floor !== null &&
+                    verticalVelocity <= 0 &&
+                    camera.position.y <= floor + PLAYER_HEIGHT
+                ) {
+                    camera.position.y = floor + PLAYER_HEIGHT;
+                    verticalVelocity = 0;
+                    grounded = true;
+                } else {
+                    grounded = false;
+                }
+
+                // Pádu do prázdna
+                if (camera.position.y < -15) {
+                    respawn();
+                }
+            }
+
+            const time = performance.now() * 0.0002;
+            clouds.forEach((cloud, index) => {
+                cloud.position.x += Math.sin(time + index) * 0.003;
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        window.addEventListener("resize", () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
